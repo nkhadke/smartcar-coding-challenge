@@ -23,4 +23,9 @@ E.g. `curl localhost:5000/vehicles/1235 -X GET -H "Content-Type: application/jso
 I approached the testing of this API in two ways.
 
 1. Testing internal functions to ensure validity of input and output
+
+This involved testing the utility functions in `smartcar.py` to ensure that they are parsing input correctly and are returning the right outputs in the intended formats.
+
 2. Testing GET/POST requests to the routes built to ensure validity of input and output
+
+This involved testing the routing logic built in `app.py` to ensure that the routes have been developed properly and that the API is taking in the right inputs and providing the right outputs in the intended formats.
