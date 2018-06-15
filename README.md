@@ -2,7 +2,7 @@
 
 ## Usage
 To emulate the API I developed a running local Flask instance with the routes specified in the API spec. To run this
-server run `python app.py` and navigate to `localhost:5000/<route>` using your web browser where \<route\> is one of the routes specified in the Smartcar API spec.
+server run `python app.py` and navigate to `localhost:5000/<route>` using your web browser where &lt;route&gt; is one of the routes specified in the Smartcar API spec.
 
 E.g. `localhost:5000/vehicles/1234` or `localhost:5000/vehicles/1234/fuel`
 
