@@ -1,4 +1,6 @@
-# Installation and Usage
+# Smartcar Backend Coding Challenge
+
+## Installation and Usage
 To emulate the API I created a running local Flask instance with the routes specified in the API spec. To run this
 server run `python app.py` and navigate to `localhost:5000/<route>` where the route is one of the routes specified in the Smartcar API spec.
 
