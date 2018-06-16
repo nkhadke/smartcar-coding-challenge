@@ -3,9 +3,19 @@ import requests
 import smartcar
 from flask import abort
 
-class TestVehicleInfo(unittest.TestCase):
+"""
+This file extensively tests the various functions written in this project.
+It also performs GET/POST requests for a Flask instance running on localhost:5000.
+"""
 
-	def test_valid_input(self):
+class TestVehicleInfo(unittest.TestCase):
+	"""
+	Testing the get_vehicle_info function located in smartcar.py for valid input/output
+	"""
+
+	def test_invalid_input(self):
+
+		#ensure that invalid inputs raise Errors
 		with self.assertRaises(ValueError):
 			smartcar.get_vehicle_info(123)
 		with self.assertRaises(ValueError):
@@ -20,6 +30,7 @@ class TestVehicleInfo(unittest.TestCase):
 			smartcar.get_vehicle_info(None)
 
 	def test_valid_output(self):
+
 		ret_obj = smartcar.get_vehicle_info(1234)
 
 		#check type of data being returned
@@ -51,8 +62,13 @@ class TestVehicleInfo(unittest.TestCase):
 		self.assertEqual(ret_obj['doorCount'], 2)
 
 class TestDoorStatus(unittest.TestCase):
+	"""
+	Testing the get_door_status function located in smartcar.py for valid input/output
+	"""
 
 	def test_valid_input(self):
+
+		#ensure that invalid inputs raise Errors
 		with self.assertRaises(ValueError):
 			smartcar.get_door_status(123)
 		with self.assertRaises(ValueError):
@@ -101,8 +117,13 @@ class TestDoorStatus(unittest.TestCase):
 		self.assertEqual(len(expected), 0)
 
 class TestFuelRange(unittest.TestCase):
+	"""
+	Testing the get_fuel_range function located in smartcar.py for valid input/output
+	"""
 
 	def test_valid_input(self):
+
+		#ensure that invalid inputs raise Errors
 		with self.assertRaises(ValueError):
 			smartcar.get_fuel_range(123)
 		with self.assertRaises(ValueError):
@@ -117,6 +138,7 @@ class TestFuelRange(unittest.TestCase):
 			smartcar.get_fuel_range(None)
 
 	def test_valid_output(self):
+
 		ret_obj = smartcar.get_fuel_range(1234)
 
 		#check type of data being returned
@@ -131,8 +153,13 @@ class TestFuelRange(unittest.TestCase):
 			smartcar.get_fuel_range(1235)
 
 class TestBatteryRange(unittest.TestCase):
+	"""
+	Testing the get_battery_range function located in smartcar.py for valid input/output
+	"""
 
 	def test_valid_input(self):
+
+		#ensure that invalid inputs raise Errors
 		with self.assertRaises(ValueError):
 			smartcar.get_battery_range(123)
 		with self.assertRaises(ValueError):
@@ -161,6 +188,9 @@ class TestBatteryRange(unittest.TestCase):
 			smartcar.get_battery_range(1234)
 
 class TestControlEngine(unittest.TestCase):
+	"""
+	Testing the control_engine function located in smartcar.py for valid input/output
+	"""
 
 	def test_valid_input(self):
 
@@ -197,6 +227,7 @@ class TestControlEngine(unittest.TestCase):
 			smartcar.control_engine(1234, 123)
 
 	def test_valid_output(self):
+
 		ret_obj = smartcar.control_engine(1234, "START")
 
 		#check type of data being returned
@@ -207,15 +238,17 @@ class TestControlEngine(unittest.TestCase):
 class TestGetPostRequests(unittest.TestCase):
 	"""
 	This is to test whether GET and POST requests are being performed and handled correctly.
-	I have built a Flask App that creates a local server that we can test on.
+	This class is testing the various functions in smartcar.py by performing GET/POST requests
+	on a Flask instance running on a local server.
 
 	*** IMPORTANT ***
 	Please run the local server using python app.py to successfully utilize
 	this testing suite
-
 	"""
 	def test_vehicle_info(self):
+
 		r = requests.get('http://127.0.0.1:5000/vehicles/1235')
+		# test if a valid GET request is fulfilled correctly
 		self.assertEqual(r.status_code, 200)
 		data = r.json()
 		self.assertEqual(data['vin'], '1235AZ91XP')
@@ -223,12 +256,8 @@ class TestGetPostRequests(unittest.TestCase):
 		self.assertEqual(data['driveTrain'], "electric")
 		self.assertEqual(data['doorCount'], 2)
 
-		#bad request
-		r = requests.get('http://127.0.0.1:5000/vehicles/1230')
-		#check if it is indeed a bad request (404)
-		self.assertEqual(r.status_code, 404)
-
 		r = requests.get('http://127.0.0.1:5000/vehicles/1234')
+		# test if a valid GET request is fulfilled correctly
 		self.assertEqual(r.status_code, 200)
 		data = r.json()
 		self.assertEqual(data['vin'], '123123412412')
@@ -236,24 +265,31 @@ class TestGetPostRequests(unittest.TestCase):
 		self.assertEqual(data['driveTrain'], "v8")
 		self.assertEqual(data['doorCount'], 4)
 
+		#test if a bad GET request is fulfilled correctly
+		r = requests.get('http://127.0.0.1:5000/vehicles/1230')
+		#check if it is indeed a bad request (404)
+		self.assertEqual(r.status_code, 404)
+
+		#test if a POST request is denied
+		r = requests.post('http://127.0.0.1:5000/vehicles/1234')
+		#check if it is indeed a bad request (405: method not allowed)
+		self.assertEqual(r.status_code, 405)
 
 	def test_security(self):
+
+		#test if a valid GET request is fulfilled correctly
 		r = requests.get('http://127.0.0.1:5000/vehicles/1234/doors')
 		self.assertEqual(r.status_code, 200)
 		data = r.json()
 		self.assertEqual(len(data), 4)
 		#there is no way to check for booleans being returned right because they are being randomly generated
-		#check that the exact 4 locations are present in the data being returned
+		#so we check that the exact 4 locations are present in the data being returned
 		expected = ["frontLeft", "frontRight", "backRight", "backLeft"]
 		for value in data:
 			expected.remove(value['location'])
 		self.assertEqual(len(expected), 0)
 
-		#bad request
-		r = requests.get('http://127.0.0.1:5000/vehicles/1230/doors')
-		#check if it is indeed a bad request (404)
-		self.assertEqual(r.status_code, 404)
-
+		#test if a valid GET request is fulfilled correctly
 		r = requests.get('http://127.0.0.1:5000/vehicles/1235/doors')
 		self.assertEqual(r.status_code, 200)
 		data = r.json()
@@ -265,7 +301,19 @@ class TestGetPostRequests(unittest.TestCase):
 			expected.remove(value['location'])
 		self.assertEqual(len(expected), 0)
 
+		#test if a bad GET request is fulfilled correctly
+		r = requests.get('http://127.0.0.1:5000/vehicles/1230/doors')
+		#check if it is indeed a bad request (404)
+		self.assertEqual(r.status_code, 404)
+
+		#test if a POST request is denied
+		r = requests.post('http://127.0.0.1:5000/vehicles/1234/doors')
+		#check if it is indeed a bad request (405: method not allowed)
+		self.assertEqual(r.status_code, 405)
+
 	def test_fuel_range(self):
+
+		#test if a valid GET request is fulfilled correctly
 		r = requests.get('http://127.0.0.1:5000/vehicles/1234/fuel')
 		self.assertEqual(r.status_code, 200)
 		data = r.json()
@@ -276,12 +324,19 @@ class TestGetPostRequests(unittest.TestCase):
 		self.assertLessEqual(data['percent'], 100.0)
 		self.assertGreaterEqual(data['percent'], 0.0)
 
-		#bad request since this is an electric car
+		#test if a bad request (since this is an electric car) is being fulfilled
 		r = requests.get('http://127.0.0.1:5000/vehicles/1235/fuel')
 		#check if it is indeed a bad request (500)
 		self.assertEqual(r.status_code, 404)
 
+		#test if a POST request is denied
+		r = requests.post('http://127.0.0.1:5000/vehicles/1234/fuel')
+		#check if it is indeed a bad request (405: method not allowed)
+		self.assertEqual(r.status_code, 405)
+
 	def test_battery_range(self):
+
+		#test if a valid GET request is fulfilled correctly
 		r = requests.get('http://127.0.0.1:5000/vehicles/1235/battery')
 		self.assertEqual(r.status_code, 200)
 		data = r.json()
@@ -292,52 +347,64 @@ class TestGetPostRequests(unittest.TestCase):
 		self.assertLessEqual(data['percent'], 100.0)
 		self.assertGreaterEqual(data['percent'], 0.0)
 
-		#bad request since this is an electric car
+		##test if a bad request (since this is an electric car) is being fulfilled
 		r = requests.get('http://127.0.0.1:5000/vehicles/1234/battery')
 		#check if it is indeed a bad request (500)
 		self.assertEqual(r.status_code, 404)
 
+		#test if a POST request is denied
+		r = requests.post('http://127.0.0.1:5000/vehicles/1235/battery')
+		#check if it is indeed a bad request (405: method not allowed)
+		self.assertEqual(r.status_code, 405)
+
 	def test_control_engine(self):
+
+		#test if valid POST requests are being fulfilled correctly with intended outputs
 		r = requests.post('http://127.0.0.1:5000/vehicles/1235/engine', json={"action" : "START"})
 		self.assertEqual(r.status_code, 200)
 		data = r.json()
 		self.assertIn(data['status'], ['success', 'error'])
 
+		#test if valid POST requests are being fulfilled correctly with intended outputs
 		r = requests.post('http://127.0.0.1:5000/vehicles/1235/engine', json={"action" : "STOP"})
 		self.assertEqual(r.status_code, 200)
 		data = r.json()
 		self.assertIn(data['status'], ['success', 'error'])
 
-		#bad request with bad input
-		r = requests.post('http://127.0.0.1:5000/vehicles/1235/engine', json={"action" : "stop"})
-		self.assertEqual(r.status_code, 400)
-		#ensure error message is being passed through
-		self.assertIn("Please provide a valid input for the action (START|STOP). stop is not a valid input", r.content)
-
-		#bad request with bad input
-		r = requests.post('http://127.0.0.1:5000/vehicles/1235/engine', json={"action" : "invalid"})
-		self.assertEqual(r.status_code, 400)
-		#ensure error message is being passed through
-		self.assertIn("Please provide a valid input for the action (START|STOP). invalid is not a valid input", r.content)
-
-		#bad request with id that does not exist
-		r = requests.post('http://127.0.0.1:5000/vehicles/123/engine', json={"action" : "START"})
-		self.assertEqual(r.status_code, 404)
-
+		#test if valid POST requests are being fulfilled correctly with intended outputs
 		r = requests.post('http://127.0.0.1:5000/vehicles/1234/engine', json={"action" : "START"})
 		self.assertEqual(r.status_code, 200)
 		data = r.json()
 		self.assertIn(data['status'], ['success', 'error'])
 
+		#test if valid POST requests are being fulfilled correctly with intended outputs
 		r = requests.post('http://127.0.0.1:5000/vehicles/1234/engine', json={"action" : "STOP"})
 		self.assertEqual(r.status_code, 200)
 		data = r.json()
 		self.assertIn(data['status'], ['success', 'error'])
 
+		#test if bad request with bad input is denied
+		r = requests.post('http://127.0.0.1:5000/vehicles/1235/engine', json={"action" : "stop"})
+		#test if 400 (malformed request) is being returned
+		self.assertEqual(r.status_code, 400)
+		#ensure error message is being passed through
+		self.assertIn("Please provide a valid input for the action (START|STOP). stop is not a valid input", r.content)
 
+		#test if bad request with bad input is denied
+		r = requests.post('http://127.0.0.1:5000/vehicles/1235/engine', json={"action" : "invalid"})
+		#test if 400 (malformed request) is being returned
+		self.assertEqual(r.status_code, 400)
+		#ensure error message is being passed through
+		self.assertIn("Please provide a valid input for the action (START|STOP). invalid is not a valid input", r.content)
 
+		#test if bad request with id that does not exist is fulfilled correctly
+		r = requests.post('http://127.0.0.1:5000/vehicles/123/engine', json={"action" : "START"})
+		self.assertEqual(r.status_code, 404)
 
-
+		#test if a GET request is denied
+		r = requests.get('http://127.0.0.1:5000/vehicles/1234/engine')
+		#check if it is indeed a bad request (405: method not allowed)
+		self.assertEqual(r.status_code, 405)
 
 if __name__ == '__main__':
 	unittest.main()

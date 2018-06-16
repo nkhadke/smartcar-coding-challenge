@@ -1,5 +1,10 @@
 import requests
 import json
+import utility
+"""
+This contains the functions that parse input from client requests, obtain relevant 
+data from the GM API and return the required data in a clean format to the client
+"""
 
 def get_vehicle_info(id):
 	"""
@@ -7,25 +12,24 @@ def get_vehicle_info(id):
 	:param id: A unqiue idenitifer to locate a car
 	:rtype: ret_data: JSON object containing relevant vehicle details if found
 	"""
+
 	headers = {
 	    'Content-Type': 'application/json'
 	}
-
-	if (id is None):
-		raise ValueError("Please provide a valid option for the vehicle ID.")
-
-	if (type(id) != int):
-		raise ValueError("Please provide a valid option for the vehicle ID. " + id + " is not a valid option")
 
 	params = {
 		"id": id,
 		"responseType": "JSON"
 	}
 
+	#check for valid input
+	params = utility.check_valid_input(params)
+
+	#perform POST request to GM API to obtain relevant data
 	r = requests.post('http://gmapi.azurewebsites.net/getVehicleInfoService', headers=headers, json=params)
 
 	ret_data = None
-	# we have what we need and check for 4XX or 5XX status codes
+	# proceed with constructing the return object only if we have recieved data correctly
 	if (r.status_code == requests.codes.ok and r.raise_for_status() is None):
 		r  = r.json()
 
@@ -33,6 +37,7 @@ def get_vehicle_info(id):
 		if ('data' in r):
 			data = r['data']
 		else:
+			#this will trigger a 404 status code to be returned
 			raise ValueError("404")
 
 		#Grab relevant data if present
@@ -40,7 +45,7 @@ def get_vehicle_info(id):
 		if ('vin' in data):
 			vin = data['vin']['value']
 		else:
-			raise ValueError('No VIN present for this vehicle')
+			raise ValueError("No VIN present for this vehicle")
 
 		if ('color' in data):
 			color = data['color']['value']
@@ -69,28 +74,29 @@ def get_vehicle_info(id):
 			"driveTrain" : drive_train
 		}
 	else:
+		#Raise an exception for any 4XX or 5XX status code being returned from GM API
 		r.raise_for_status()
+
 	return ret_data
 
-"""
-Get status of each door (LOCKED/UNLOCKED)
-"""
 def get_door_status(id):
+	"""
+	Get status of each door for a given ID corresponding to a vehicle (LOCKED/UNLOCKED)
+	:param id: A unqiue idenitifer to locate a car
+	:rtype: ret_data: JSON object containing relevant vehicle details if found
+	"""
 
 	headers = {
 	    'Content-Type': 'application/json'
 	}
 
-	if (id is None):
-		raise ValueError("Please provide a value option for the vehicle ID.")
-
-	if (type(id) != int):
-		raise ValueError("Please provide a valid option for the vehicle ID. " + id + " is not a valid option")
-
 	params = {
 		"id": id,
 		"responseType": "JSON"
 	}
+
+	#check for a valid input
+	params = utility.check_valid_input(params)
 
 	r = requests.post('http://gmapi.azurewebsites.net/getSecurityStatusService', headers=headers, json=params)
 
@@ -122,24 +128,24 @@ def get_door_status(id):
 
 	return ret_data
 
-"""
-Obtains fuel range if the car is gas-operated
-"""
 def get_fuel_range(id):
+	"""
+	Gets fuel range of a vehicle given its ID if applicable (if vehicle is fuel powered)
+	:param id: A unqiue idenitifer to locate a car
+	:rtype: ret_data: JSON object containing relevant vehicle details if found
+	"""
+
 	headers = {
 	    'Content-Type': 'application/json'
 	}
-
-	if (id is None):
-		raise ValueError("Please provide a value option for the vehicle ID.")
-
-	if (type(id) != int):
-		raise ValueError("Please provide a valid option for the vehicle ID. " + id + " is not a valid option")
 
 	params = {
 		"id": id,
 		"responseType": "JSON"
 	}
+
+	#check for a valid input
+	params = utility.check_valid_input(params)
 
 	r = requests.post('http://gmapi.azurewebsites.net/getEnergyService', headers=headers, json=params)
 
@@ -163,10 +169,13 @@ def get_fuel_range(id):
 
 	return ret_data
 
-"""
-Obtains the battery range if the car is electric
-"""
 def get_battery_range(id):
+	"""
+	Gets battery range of a vehicle given its ID if applicable (if vehicle is electric)
+	:param id: A unqiue idenitifer to locate a car
+	:rtype: ret_data: JSON object containing relevant vehicle details if found
+	"""
+
 	headers = {
 	    'Content-Type': 'application/json'
 	}
@@ -175,6 +184,9 @@ def get_battery_range(id):
 		"id": id,
 		"responseType": "JSON"
 	}
+
+	#check for a valid input
+	params = utility.check_valid_input(params)
 
 	r = requests.post('http://gmapi.azurewebsites.net/getEnergyService', headers=headers, json=params)
 
@@ -202,34 +214,25 @@ def get_battery_range(id):
 Allows user to start/stop a car
 """
 def control_engine(id, action):
+	"""
+	Allows clients to start/stop a vehicle given a unique ID and corresponding action
+	:param id: A unqiue idenitifer to locate a car
+	:param action: Corresponding action to take (START|STOP)
+	:rtype: ret_data: JSON object containing relevant vehicle details if found
+	"""
+
 	headers = {
 	    'Content-Type': 'application/json'
 	}
-	#add case checking
-	if (id is None):
-		raise ValueError("Please provide a value option for the vehicle ID.")
-
-	if (type(id) != int):
-		raise ValueError("Please provide a valid option for the vehicle ID. " + id + " is not a valid option")
-
-	if (action is None):
-		raise ValueError("Please provide a value input for the action (START|STOP)")
-
-	if (type(action) != str and type(action) != unicode):
-		raise ValueError("Please provide a valid input for the action (START|STOP). " + str(action) + " is not a valid input")
-
-	if (action == 'START'):
-		command = "START_VEHICLE"
-	elif (action == 'STOP'):
-		command = "STOP_VEHICLE"
-	else:
-		raise ValueError("Please provide a valid input for the action (START|STOP). " + action + " is not a valid input")
 
 	params = {
 		"id": id,
-		"command" : command,
+		"command" : action,
 		"responseType": "JSON"
 	}
+
+	#check for a valid input
+	params = utility.check_valid_input(params)
 
 	r = requests.post('http://gmapi.azurewebsites.net/actionEngineService', headers=headers, json=params)
 
