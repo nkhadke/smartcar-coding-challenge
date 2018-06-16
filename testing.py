@@ -6,6 +6,10 @@ from flask import abort
 """
 This file extensively tests the various functions written in this project.
 It also performs GET/POST requests for a Flask instance running on localhost:5000.
+Please ensure that this local Flask instance is running before executing all test
+cases. You can do so by executing:
+`python app.py`
+
 """
 
 class TestVehicleInfo(unittest.TestCase):
